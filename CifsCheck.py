@@ -62,50 +62,66 @@ def read_dir(readDirector):
                 result.append({ "value": itemPath, "type": 'file', "label": file_info.name }) 
         return result
 
-def read_ftp(fname):
-    # files = []
-    filecheck=[]
-    # ftp = ftplib.FTP(readftp,'engineering4','saurabhi')
-    # try:
-    #     files = ftp.nlst()
-    # except ftplib.error_perm as resp:
-        # if str(resp) == "550 No files found":
-        #     print("No files in this directory")
-        # else:
-        #     raise
+@app.get("/ftp")
+def read_Rootftp():          
+    readDir = read_ftp()    
+    # print(readDir,"read_Rootftp")
+    return {"Hello": readDir}
 
-    with ftputil.FTPHost(readftp,"pcName", "password") as ftp_host:  
+
+
+# @app.get("/ftp/{ftp_id}")
+# def read_Rootftp(ftp_id):          
+#     # ftpDir = read_ftp(ftp_id)    
+#     print(ftp_id,"ftp_id")
+#     return {"Hello": ftp_id}
+
+
+def read_ftp():
+    filecheck=[] 
+    with ftputil.FTPHost(readftp,"pcName", "password") as ftp_host:
         # ftp_host.chdir("/{fname}/")       
         list = ftp_host.listdir(ftp_host.curdir)
         for fname in list:
-            itemPath = os.path.join(readftp,fname)   
+            itemPath = os.path.join(readFtpIp,fname)   
             if ftp_host.path.isdir(fname):           
-                # childDirectory = ftp_host.chdir("/{fname}/") 
-                print(itemPath + " is a directory")
+                childDirectory = readFtp_dir(rf"/{fname}/")  
                 filecheck.append(
                     { 
-                        "value":itemPath,
+                        "value":f"{readFtpIp+chr(92)+fname}",
                         'label': fname,
                         'type': 'directory',   
-                        # 'children':childDirectoryd
+                        'children':childDirectory
                     })
-            else:
-                print(fname + " is not a directory")
-                filecheck.append({ "value": itemPath, "type": 'file', "label": fname }) 
-
-    # for f in files:
-    #     itemPath = os.path.join(readftp,f)   
-    #     print(f.is_,"itema")
-    #     filecheck.append(
-    #                 { 
-    #                     "value":itemPath,
-    #                     'label': f,
-    #                     'type': 'directory',  
-    #                 })
-
-    # print(filecheck,"files")
-    # ftp.quit()      
+            else: 
+                filecheck.append({ "value": f"{readFtpIp+chr(92)+fname}", "type": 'file', "label": fname }) 
     return filecheck
+
+def readFtp_dir(Dir_Name):
+    # print(Dir_Name,"Dir_Nane")
+    filecheck=[]
+    with ftputil.FTPHost(readftp,"pcName", "password") as ftp_host:
+    items.chdir(Dir_Name) 
+    list = items.listdir(items.curdir) 
+    for file_info in list: 
+         # file_inode = file_info.inode()
+            itemPath = os.path.join(readFtpIp,file_info)
+            changePath = os.path.join(Dir_Name,file_info)
+            if items.path.isdir(file_info):      
+                # log.error("childDirectory error")      
+                childDirectory = readFtp_dir(changePath); 
+                # print(readFtpIp,changePath,'isdir')    
+                filecheck.append(
+                    {
+                        'value': f"{readFtpIp+changePath}",
+                        'label': file_info,
+                        'type': 'directory', 
+                        'children':childDirectory
+                    })
+            else:  
+                filecheck.append({ "value": f"{readFtpIp+changePath}", "type": 'file', "label": file_info }) 
+    return filecheck 
+
         
     
 
